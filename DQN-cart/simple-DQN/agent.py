@@ -41,7 +41,12 @@ class Agent(Model):
 		## building the network
 		self.buildNetwork()
 
-		self.sess = tf.Session() 
+		self.sess = tf.Session()
+
+		## restore the save ckpt files 
+		if not self.trainFlag:
+			self.restoreCkpt()
+		
 		self.sess.run(tf.global_variables_initializer())
 
 	def learn(self):
@@ -59,17 +64,16 @@ class Agent(Model):
 		for currState,currAction,currReward,nextState,ifDone,qvalNextState in zip(batchCurrentState,batchAction,batchReward,batchNextState,batchDone,predQvalNextState[0]):
 			currStateInfo.append(currState)
 			## coverting action to one ht encoding
-			temp = np.zeros((1,2))
+			temp = np.zeros((1,self.noAction))
 			temp[0,currAction[0]]=1
 			actionForPred.append(temp)
-			expectedQValue.append(currReward[0] + np.max(qvalNextState) *(1-ifDone))## formulation for Q value
+			expectedQValue.append(currReward[0] + self.gamma *np.max(qvalNextState) *(1-ifDone))## formulation for Q value
 			
 
 		stateMat = np.vstack(currStateInfo)
 		qValMat = np.vstack(expectedQValue)
 		actMat = np.vstack(actionForPred)
 
-		print("qValMat shape : ",qValMat.shape)
 		## train the network 
 		cost = self.learnNetwork(inputState=stateMat,targetQ=qValMat,action=actMat,sess=self.sess)
 		return cost
@@ -84,15 +88,24 @@ class Agent(Model):
 		possible action based on exploration probability
 		"""
 		val = random.random()
-		if val>exploreProb:
-			output = np.array(currentState).reshape(1,4)
+		if (val>exploreProb):
+			output = np.array(currentState).reshape(1,self.stateDim)
 			actionProb = self.forwardPass(inputState=output,sess = self.sess)
 			return np.argmax(actionProb)
 		else:
-			
 			return random.choice(np.arange(self.noAction)) 
 
+	def saveModel(self):
+		## save the model
+		saver=tf.train.Saver()
+		saver.save(self.sess, self.modelAdd) 
 
+	def restoreCkpt(self):
+		#restore the model in given path
+		print ("model restored")
+		saver=tf.train.Saver()
+		saver.restore(self.sess, self.modelAdd)
+		
 class replayBuffer(object):
 	def __init__(self,maxLen,seed,batchSize):
 		"""
@@ -137,3 +150,5 @@ class replayBuffer(object):
 	def __len__(self):
 		## defining the length option for the agent
 		return len(self.memory)
+
+	

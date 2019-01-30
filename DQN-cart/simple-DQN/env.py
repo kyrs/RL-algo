@@ -11,31 +11,37 @@ import random
 
 MinEpisode=500 ## filling replay buffer with random episode information to inatiate training
 EPS = 0.99 ## initial prob of exploration
-class CartPoleEnv(object):
+
+TRAIN = False
+
+class gymEnv(object):
 	
-	def __init__(self, logAdd="./log",batchSize = 32,maxIter=1000,maxTrEpisode =30000 ,learnStep =400,explDecayStep=1000):
+	def __init__(self, logAdd="./log",batchSize = 32,maxIter=1000,maxTrEpisode =4500 ,testEpisode = 50,learnStep =400,explDecayStep=10000):
 		"""
 		logAdd : address for saving all the log information
 		batchSize : size of the batch for training
 		maxIter   : maximum number of iteration after which an episode will be terminated
 		learnStep : learn after taking given no of step
 		explDecayStep : decay exploration after given step
+		testEpisode : no of time to show the test
 		"""
 
 		self.logAdd = logAdd ## by default ./log is taken as log add
 		self.batchSize = batchSize
 		self.maxIter = maxIter
-		self.env = gym.make("CartPole-v1")
+		self.env = gym.make("Acrobot-v1")
 		self.obsSpace = self.env.observation_space.shape[0]
 		self.actSpace = self.env.action_space.n
 		self.explDecayStep = explDecayStep
 		self.learnStep = learnStep
 		self.maxTrEpisode = maxTrEpisode
+		self.testEpisode = testEpisode
 		## creating an agent for processing
-		self.agent = Agent(stateDim=self.obsSpace,noAction=self.actSpace,logAdd=self.logAdd,batchSize=self.batchSize)
+		self.agent = Agent(stateDim=self.obsSpace,noAction=self.actSpace,logAdd=self.logAdd,batchSize=self.batchSize,train=TRAIN)
 
 		## initialize the memory of the agent
-		self.initReplay() 
+		if (TRAIN):
+			self.initReplay() 
 
 	def initReplay(self):
 		## filling replayBuffer
@@ -96,12 +102,33 @@ class CartPoleEnv(object):
 		self.agent.saveModel()
 
 
+	def play(self):
+		## play the game
+		episode =0 
+		
+		totalStep = 0
+		while(episode <=self.testEpisode):
+			state = self.env.reset()
+			i = 0
+			## run for maximum given no of iteration
+			while(i<self.maxIter):
+				action = self.agent.action(currentState = state,exploreProb= 0.0)
+				nextState,reward,terminal,info = self.env.step(action)
+				self.env.render()
+
+				if terminal:
+					break
+
+				state = nextState
+				i+=1
+			episode+=1
+
+
 if __name__ == "__main__":
-	obj = CartPoleEnv()
-	state = obj.env.reset()
-	obj.learnToPlay()
-	# state_next, reward, terminal, info = obj.env.step(1)
-	# print (state_next)
-	# print(reward)
-	# print (obj.obsSpace)
-	# print(obj.actSpace)
+	obj = gymEnv()
+	# uncomment it to learn
+	#obj.learnToPlay()
+
+	## uncomment it to play
+	obj.play()
+	

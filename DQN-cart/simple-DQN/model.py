@@ -87,8 +87,4 @@ class Model(object):
 		Qsa = sess.run([self.logit],{self.input:inputState})
 		return Qsa
 
-	def saveModel(self,sess):
-		## save the model
-		saver=tf.train.Saver()
-		saver.save(sess, self.modelAdd) 
-
+	
