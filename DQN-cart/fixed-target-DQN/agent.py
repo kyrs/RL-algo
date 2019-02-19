@@ -129,7 +129,7 @@ class FixedTargetAgent:
 
 		opHolder = []
 		
-		# Update our target_network parameters with DQNNetwork parameters (POSSIBILITY OF MEMORY LEAK  NOTE : FIND AN ALTERNATIVE OF PLACEHOLDER)
+		# Update our target_network parameters with DQNNetwork parameters (POSSIBILITY OF MEMORY LEAK  NOTE : FIND AN ALTERNATIVE using PLACEHOLDER)
 		with self.targetNet.graph.as_default():
 			for fromVar,toVar in zip(fromVars,toVars):
 				opHolder.append(toVar.assign(fromVar))
