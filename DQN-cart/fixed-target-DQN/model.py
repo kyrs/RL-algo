@@ -1,6 +1,6 @@
 """
 __author__ : Kumar shubham
-__date__   : 27-Jan-2019
+__date__   : 18-Feb-2019
 __desc__   : implementation of an agent for simple DQN implementation
 """
 

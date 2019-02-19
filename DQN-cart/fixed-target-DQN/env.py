@@ -1,6 +1,6 @@
 """
 __author__ : Kumar shubham
-__date__   : 29-01-2019
+__date__   : 18-02-2019
 __desc__   : following code will model the interaction in cartPole  game will try to learn the agent to model the interaction.
 """
 from agent import FixedTargetAgent as Agent
