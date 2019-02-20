@@ -12,11 +12,11 @@ import random
 MinEpisode=500 ## filling replay buffer with random episode information to inatiate training
 EPS = 0.99 ## initial prob of exploration
 
-TRAIN = True
+TRAIN = False
 
 class gymEnv(object):
 	
-	def __init__(self, logAdd="./log",batchSize = 32,maxIter=1000,maxTrEpisode =4500 ,testEpisode = 50,learnStep =400,explDecayStep=10000,switchTargStep = 5000):
+	def __init__(self, logAdd="./log",batchSize = 32,maxIter=5000,maxTrEpisode =9500 ,testEpisode = 50,learnStep =400,explDecayStep=25000,switchTargStep = 5000):
 		"""
 		logAdd : address for saving all the log information
 		batchSize : size of the batch for training
@@ -39,12 +39,14 @@ class gymEnv(object):
 		self.testEpisode = testEpisode
 		## creating an agent for processing
 		self.agent = Agent(stateDim=self.obsSpace,noAction=self.actSpace,logAdd=self.logAdd,batchSize=self.batchSize,train=TRAIN)
-
+		self.negativeReward = -0.0001
 		## initialize the memory of the agent
 		if (TRAIN):
 			self.initReplay() 
 
 		self.switchTargStep = switchTargStep
+
+		
 
 	def initReplay(self):
 		## filling replayBuffer
@@ -54,9 +56,15 @@ class gymEnv(object):
 			state = self.env.reset()
 			i = 0
 			## run for maximum given no of iteration
+			####################################################################################################
+			# during testing it took too much time for model to respond
+			# so to fasten things up we are adding a negative reward of -0.0001 per step 
+			######################################################################################
+
 			while(i<self.maxIter):
 				action = random.choice(np.arange(self.actSpace))
 				nextState,reward,terminal,info = self.env.step(action)
+				reward += self.negativeReward*i ## negative reward
 				self.agent.replayBufMemory.add(currentState=state,action=action,reward=reward,nextState=nextState,done=terminal)
 				if terminal:
 					break
@@ -81,6 +89,7 @@ class gymEnv(object):
 			while(i<self.maxIter):
 				action = self.agent.action(currentState = state,exploreProb= exploreProb)
 				nextState,reward,terminal,info = self.env.step(action)
+				reward += self.negativeReward*i ## negative reward
 				self.agent.replayBufMemory.add(currentState=state,action=action,reward=reward,nextState=nextState,done=terminal)
 
 				if terminal:

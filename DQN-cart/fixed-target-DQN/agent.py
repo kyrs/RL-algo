@@ -37,11 +37,11 @@ class FixedTargetAgent:
 		self.trainFlag = train
 		self.replayBufMemory = replayBuffer(maxLen=10000,seed = 100,batchSize = self.batchSize)
 
-		summAdd = os.path.join(self.logAdd,"summary")
-		modelAdd = os.path.join(self.logAdd,"model")
+		self.summAdd = os.path.join(self.logAdd,"summary")
+		self.modelAdd = os.path.join(self.logAdd,"model")
 
-		self.targetNet = Model(self.stateDim,self.noAction,tf.nn.relu,0.001,summAdd,modelAdd)
-		self.actualNet = Model(self.stateDim,self.noAction,tf.nn.relu,0.001,summAdd,modelAdd)
+		self.targetNet = Model(self.stateDim,self.noAction,tf.nn.relu,0.001,self.summAdd,self.modelAdd)
+		self.actualNet = Model(self.stateDim,self.noAction,tf.nn.relu,0.001,self.summAdd,self.modelAdd)
 
 
 		gpuOptions = tf.GPUOptions(per_process_gpu_memory_fraction=gpuPercent)
@@ -110,14 +110,16 @@ class FixedTargetAgent:
 
 	def saveModel(self):
 		## save the model
-		saver=tf.train.Saver()
-		saver.save(self.actualNet.sess, self.modelAdd) 
+		with self.actualNet.graph.as_default():
+			saver=tf.train.Saver()
+			saver.save(self.actualNet.sess, self.modelAdd) 
 
 	def restoreCkpt(self):
 		#restore the model in given path
 		print ("model restored")
-		saver=tf.train.Saver()
-		saver.restore(self.actualNet.sess, self.modelAdd)
+		with self.actualNet.graph.as_default():
+			saver=tf.train.Saver()
+			saver.restore(self.actualNet.sess, self.modelAdd)
 
 	def tranfActToTar(self):
 		## method to transfer the weights of actual network to target network
