@@ -46,8 +46,8 @@ class Agent(Model):
 		## restore the save ckpt files 
 		if not self.trainFlag:
 			self.restoreCkpt()
-		
-		self.sess.run(tf.global_variables_initializer())
+		else:
+			self.sess.run(tf.global_variables_initializer())
 
 	def learn(self):
 		## code for trainig the network

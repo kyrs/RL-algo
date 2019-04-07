@@ -55,12 +55,13 @@ class FixedTargetAgent:
 		## restore the save ckpt files 
 		if not self.trainFlag:
 			self.restoreCkpt()
-		
-		with self.targetNet.graph.as_default(): 
-			self.targetNet.sess.run(tf.global_variables_initializer())
+		else:
+			
+			with self.targetNet.graph.as_default(): 
+				self.targetNet.sess.run(tf.global_variables_initializer())
 
-		with self.actualNet.graph.as_default():
-			self.actualNet.sess.run(tf.global_variables_initializer())
+			with self.actualNet.graph.as_default():
+				self.actualNet.sess.run(tf.global_variables_initializer())
 
 	def learn(self):
 		## code for trainig the network
